@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paveforth Advisory — The Way Forth, Paved.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,340;9..144,480;9..144,600&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0B0B0C;
+    --paper:#F5F5F5;
+    --paper-2:#EDEDEA;
+    --purple:#835DFF;
+    --purple-deep:#6A46E0;
+    --red:#E00700;
+    --blue:#0092E1;
+    --line: rgba(11,11,12,0.14);
+    --line-soft: rgba(11,11,12,0.08);
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Sora', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  a{ color:inherit; }
+
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 32px;
+  }
+
+  /* ---------- NAV ---------- */
+  nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:28px 32px;
+    max-width:1180px;
+    margin:0 auto;
+  }
+  .wordmark{
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:0.01em;
+    line-height:1.15;
+  }
+  .wordmark span{ display:block; }
+  .wordmark small{
+    display:block;
+    font-weight:400;
+    font-size:11px;
+    color:rgba(11,11,12,0.55);
+    margin-top:2px;
+  }
+  .nav-tag{
+    font-size:13px;
+    color:rgba(11,11,12,0.6);
+    border:1px solid var(--line);
+    padding:6px 14px;
+    border-radius:100px;
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;
+    padding:64px 0 96px;
+    overflow:hidden;
+  }
+  .hero-grid{
+    display:grid;
+    grid-template-columns:1.15fr 0.85fr;
+    gap:40px;
+    align-items:center;
+    position:relative;
+    z-index:2;
+  }
+  .hero h1{
+    font-family:'Fraunces', serif;
+    font-weight:480;
+    font-size:clamp(44px, 6vw, 78px);
+    line-height:1.02;
+    letter-spacing:-0.01em;
+    margin:0 0 26px;
+    max-width:11ch;
+  }
+  .hero h1 em{
+    font-style:italic;
+    font-weight:340;
+  }
+  .hero p.lede{
+    font-size:18px;
+    line-height:1.55;
+    color:rgba(11,11,12,0.72);
+    max-width:46ch;
+    margin:0 0 40px;
+  }
+
+  .waitlist-form{
+    display:flex;
+    gap:10px;
+    max-width:440px;
+    flex-wrap:wrap;
+  }
+  .waitlist-form input[type="email"]{
+    flex:1 1 220px;
+    padding:16px 18px;
+    border-radius:10px;
+    border:1.5px solid var(--line);
+    background:#fff;
+    font-family:'Sora', sans-serif;
+    font-size:15px;
+    color:var(--ink);
+    outline:none;
+    transition:border-color .15s ease;
+  }
+  .waitlist-form input[type="email"]:focus{
+    border-color:var(--purple);
+  }
+  .waitlist-form button{
+    padding:16px 26px;
+    border-radius:10px;
+    border:none;
+    background:var(--ink);
+    color:#fff;
+    font-family:'Sora', sans-serif;
+    font-weight:600;
+    font-size:15px;
+    cursor:pointer;
+    transition:background .15s ease, transform .1s ease;
+    white-space:nowrap;
+  }
+  .waitlist-form button:hover{ background:var(--purple-deep); }
+  .waitlist-form button:active{ transform:scale(0.98); }
+  .waitlist-form button:focus-visible,
+  .waitlist-form input:focus-visible{
+    outline:2px solid var(--purple);
+    outline-offset:2px;
+  }
+  .waitlist-form button[disabled]{
+    background:rgba(11,11,12,0.35);
+    cursor:default;
+  }
+
+  .form-note{
+    margin-top:14px;
+    font-size:13px;
+    color:rgba(11,11,12,0.55);
+  }
+  .form-note strong{ color:var(--ink); font-weight:600; }
+
+  .confirm-box{
+    display:none;
+    max-width:440px;
+    padding:18px 20px;
+    border-radius:10px;
+    background:#fff;
+    border:1.5px solid var(--purple);
+  }
+  .confirm-box.show{ display:block; }
+  .confirm-box .title{
+    font-weight:600;
+    font-size:15px;
+    margin-bottom:4px;
+  }
+  .confirm-box .sub{
+    font-size:13.5px;
+    color:rgba(11,11,12,0.6);
+  }
+  .error-text{
+    display:none;
+    font-size:13px;
+    color:var(--red);
+    margin-top:10px;
+  }
+  .error-text.show{ display:block; }
+
+  /* ---------- HERO GRAPHIC ---------- */
+  .hero-graphic{
+    position:relative;
+    height:420px;
+  }
+  .hero-graphic svg{
+    width:100%;
+    height:100%;
+    overflow:visible;
+  }
+  .path-line{
+    stroke-dasharray:1400;
+    stroke-dashoffset:1400;
+    animation:draw 2.2s cubic-bezier(.22,.9,.3,1) 0.3s forwards;
+  }
+  @keyframes draw{
+    to{ stroke-dashoffset:0; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .path-line{ animation:none; stroke-dashoffset:0; }
+  }
+
+  /* ---------- PILLARS ---------- */
+  .pillars{
+    border-top:1px solid var(--line);
+    padding:64px 0;
+  }
+  .pillars-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:0;
+  }
+  .pillar{
+    padding:8px 48px;
+  }
+  .pillar:first-child{
+    border-right:1px solid var(--line);
+  }
+  .pillar-tag{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+    font-weight:600;
+    margin-bottom:18px;
+  }
+  .dot{
+    width:8px; height:8px;
+    border-radius:50%;
+    display:inline-block;
+  }
+  .dot.red{ background:var(--red); }
+  .dot.blue{ background:var(--blue); }
+  .pillar h3{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:28px;
+    margin:0 0 14px;
+  }
+  .pillar p{
+    font-size:15.5px;
+    line-height:1.6;
+    color:rgba(11,11,12,0.68);
+    max-width:38ch;
+    margin:0;
+  }
+
+  /* ---------- WHY JOIN ---------- */
+  .why{
+    border-top:1px solid var(--line);
+    padding:64px 0 80px;
+  }
+  .why-inner{
+    display:grid;
+    grid-template-columns:0.9fr 1.1fr;
+    gap:48px;
+  }
+  .why h2{
+    font-family:'Fraunces', serif;
+    font-weight:480;
+    font-size:clamp(30px, 3.4vw, 42px);
+    line-height:1.08;
+    margin:0;
+    max-width:11ch;
+  }
+  .why ul{
+    list-style:none;
+    margin:0;
+    padding:0;
+  }
+  .why li{
+    display:flex;
+    gap:16px;
+    padding:22px 0;
+    border-bottom:1px solid var(--line-soft);
+    font-size:16px;
+    line-height:1.5;
+  }
+  .why li:first-child{ padding-top:0; }
+  .why li .dot{
+    margin-top:7px;
+    background:var(--purple);
+    flex-shrink:0;
+  }
+  .why li strong{ font-weight:600; }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    border-top:1px solid var(--line);
+    padding:32px 0 48px;
+  }
+  .footer-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:12px;
+    font-size:13px;
+    color:rgba(11,11,12,0.55);
+  }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:860px){
+    .hero-grid{ grid-template-columns:1fr; }
+    .hero-graphic{ height:220px; order:-1; }
+    .pillars-grid{ grid-template-columns:1fr; }
+    .pillar:first-child{ border-right:none; border-bottom:1px solid var(--line); padding-bottom:36px; margin-bottom:36px; }
+    .pillar{ padding:0; }
+    .why-inner{ grid-template-columns:1fr; }
+  }
+  @media (max-width:520px){
+    .wrap{ padding:0 20px; }
+    nav{ padding:24px 20px; }
+    .hero{ padding:36px 0 56px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wordmark">
+    <span>Pave Forth</span>
+    <small>Advisory</small>
+  </div>
+  <div class="nav-tag">Launching soon</div>
+</nav>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <h1>Where ambition<br><em>meets access.</em></h1>
+      <p class="lede">A premium education and career advisory for Africa's most ambitious students — university admissions and long-term mentorship, built from Nigeria, for the continent.</p>
+
+      <form class="waitlist-form" id="waitlistForm" novalidate>
+        <input type="email" id="emailInput" placeholder="you@email.com" required aria-label="Email address">
+        <button type="submit" id="submitBtn">Join the waitlist</button>
+      </form>
+      <p class="form-note" id="formNote"><strong>Founding members</strong> get free, priority access when we open — no fees.</p>
+      <p class="error-text" id="errorText">Enter a valid email address.</p>
+
+      <div class="confirm-box" id="confirmBox">
+        <div class="title">You're on the list.</div>
+        <div class="sub" id="confirmSub">We'll reach out the moment doors open.</div>
+      </div>
+    </div>
+
+    <div class="hero-graphic" aria-hidden="true">
+      <svg viewBox="0 0 420 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path class="path-line" d="M40 40 C 140 60, 130 180, 230 190 C 330 200, 320 320, 400 380"
+              stroke="#835DFF" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="40" cy="40" r="6" fill="#0B0B0C"/>
+        <circle cx="400" cy="380" r="6" fill="#835DFF"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<section class="pillars">
+  <div class="wrap pillars-grid">
+    <div class="pillar">
+      <span class="pillar-tag"><span class="dot red"></span>Admissions</span>
+      <h3>University &amp; study abroad</h3>
+      <p>Strategy, positioning, and application guidance for competitive placement at leading universities — locally and abroad.</p>
+    </div>
+    <div class="pillar">
+      <span class="pillar-tag"><span class="dot blue"></span>Mentorship</span>
+      <h3>Career guidance, beyond the offer</h3>
+      <p>Ongoing mentorship and career pathway support that continues long after admission — for the journey that follows.</p>
+    </div>
+  </div>
+</section>
+
+<section class="why">
+  <div class="wrap why-inner">
+    <h2>What founding members get</h2>
+    <ul>
+      <li><span class="dot"></span><span><strong>Priority booking</strong> — first access to advisory slots when we open, ahead of general enquiries.</span></li>
+      <li><span class="dot"></span><span><strong>Free founding access</strong> — no fees for our first advisory cohort.</span></li>
+      <li><span class="dot"></span><span><strong>Early alerts</strong> — scholarship deadlines and application windows, sent before general release.</span></li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-row">
+    <span>© 2026 Paveforth Advisory</span>
+    <span id="countText">Be among the first to join.</span>
+  </div>
+</footer>
+
+<script>
+(async function(){
+  const form = document.getElementById('waitlistForm');
+  const input = document.getElementById('emailInput');
+  const btn = document.getElementById('submitBtn');
+  const confirmBox = document.getElementById('confirmBox');
+  const confirmSub = document.getElementById('confirmSub');
+  const errorText = document.getElementById('errorText');
+  const formNote = document.getElementById('formNote');
+  const countText = document.getElementById('countText');
+
+  const STORAGE_KEY = 'waitlist-emails';
+
+  function isValidEmail(v){
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  }
+
+  async function refreshCount(){
+    try{
+      const res = await window.storage.get(STORAGE_KEY, true);
+      const list = res && res.value ? JSON.parse(res.value) : [];
+      if(list.length > 0){
+        countText.textContent = `Join ${list.length} others already on the waitlist.`;
+      }
+    }catch(e){
+      // Key may not exist yet — that's fine, keep default copy.
+    }
+  }
+
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    errorText.classList.remove('show');
+    const email = input.value.trim();
+
+    if(!isValidEmail(email)){
+      errorText.classList.add('show');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Joining…';
+
+    try{
+      let list = [];
+      try{
+        const res = await window.storage.get(STORAGE_KEY, true);
+        list = res && res.value ? JSON.parse(res.value) : [];
+      }catch(e){ list = []; }
+
+      if(!list.includes(email)){
+        list.push(email);
+        await window.storage.set(STORAGE_KEY, JSON.stringify(list), true);
+      }
+
+      form.style.display = 'none';
+      formNote.style.display = 'none';
+      confirmBox.classList.add('show');
+      confirmSub.textContent = `You're number ${list.length} on the list. We'll reach out the moment doors open.`;
+      refreshCount();
+    }catch(err){
+      btn.disabled = false;
+      btn.textContent = 'Join the waitlist';
+      errorText.textContent = 'Something went wrong — please try again.';
+      errorText.classList.add('show');
+    }
+  });
+
+  refreshCount();
+})();
+</script>
+
+</body>
+</html>
